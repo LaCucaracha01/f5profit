@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:profitf5/database/database_helper.dart';
 import 'package:profitf5/telas/cadastro.dart';
 import 'package:profitf5/telas/objetivo.dart';
+import 'package:profitf5/session/user_session.dart';
+import 'package:profitf5/telas/treino_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,11 +15,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool esconderSenha = true;
 
-  final TextEditingController emailController =
-      TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  final TextEditingController senhaController =
-      TextEditingController();
+  final TextEditingController senhaController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const Text(
                   "Acesse sua conta",
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.white54, fontSize: 16),
                 ),
 
                 const SizedBox(height: 40),
@@ -78,16 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextField(
                   controller: emailController,
 
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(color: Colors.white),
 
                   decoration: InputDecoration(
                     hintText: "Email",
 
-                    hintStyle: const TextStyle(
-                      color: Colors.white38,
-                    ),
+                    hintStyle: const TextStyle(color: Colors.white38),
 
                     prefixIcon: const Icon(
                       Icons.email_outlined,
@@ -114,16 +107,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   obscureText: esconderSenha,
 
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(color: Colors.white),
 
                   decoration: InputDecoration(
                     hintText: "Senha",
 
-                    hintStyle: const TextStyle(
-                      color: Colors.white38,
-                    ),
+                    hintStyle: const TextStyle(color: Colors.white38),
 
                     prefixIcon: const Icon(
                       Icons.lock_outline,
@@ -138,9 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
 
                       icon: Icon(
-                        esconderSenha
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        esconderSenha ? Icons.visibility_off : Icons.visibility,
 
                         color: Colors.white54,
                       ),
@@ -170,9 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Text(
                       "Esqueci minha senha",
 
-                      style: TextStyle(
-                        color: Colors.white54,
-                      ),
+                      style: TextStyle(color: Colors.white54),
                     ),
                   ),
                 ),
@@ -186,21 +171,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   child: ElevatedButton(
                     onPressed: () async {
-                      String email =
-                          emailController.text.trim();
+                      String email = emailController.text.trim();
 
-                      String senha =
-                          senhaController.text.trim();
+                      String senha = senhaController.text.trim();
 
                       // VALIDAR CAMPOS
-                      if (email.isEmpty ||
-                          senha.isEmpty) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
+                      if (email.isEmpty || senha.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              "Preencha todos os campos",
-                            ),
+                            content: Text("Preencha todos os campos"),
                           ),
                         );
 
@@ -208,32 +187,51 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
 
                       // LOGIN SQLITE
-                      final usuario =
-                          await DatabaseHelper.instance
-                              .login(
+                      final usuario = await DatabaseHelper.instance.login(
                         email,
                         senha,
                       );
 
                       // USUARIO EXISTE
                       if (usuario != null) {
+                        // SALVAR SESSÃO DO USUÁRIO (id)
+                        if (usuario['id'] != null) {
+                          UserSession.setUserId(usuario['id'] as int);
+                        }
                         if (!mounted) return;
 
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const ObjetivoScreen(),
-                          ),
-                        );
+                        // VERIFICAR SE OBJETIVO E DADOS FÍSICOS JÁ FORAM PREENCHIDOS
+                        String? objetivo = usuario['objetivo'] as String?;
+                        int? idade = usuario['idade'] as int?;
+                        double? peso = usuario['peso'] as double?;
+                        double? altura = usuario['altura'] as double?;
+
+                        // Se objetivo e todos os dados físicos estão preenchidos, ir direto para treinos
+                        if (objetivo != null &&
+                            idade != null &&
+                            peso != null &&
+                            altura != null) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TreinoScreen(objetivo: objetivo),
+                            ),
+                          );
+                        } else {
+                          // Se faltam dados, ir para objetivo
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ObjetivoScreen(),
+                            ),
+                          );
+                        }
                       } else {
                         // LOGIN INVALIDO
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              "Email ou senha inválidos",
-                            ),
+                            content: Text("Email ou senha inválidos"),
                           ),
                         );
                       }
@@ -245,8 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       foregroundColor: Colors.black,
 
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                     ),
 
@@ -265,16 +262,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // CRIAR CONTA
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
 
                   children: [
                     const Text(
                       "Não possui conta?",
 
-                      style: TextStyle(
-                        color: Colors.white54,
-                      ),
+                      style: TextStyle(color: Colors.white54),
                     ),
 
                     TextButton(
@@ -282,8 +276,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const CadastroScreen(),
+                            builder: (context) => const CadastroScreen(),
                           ),
                         );
                       },

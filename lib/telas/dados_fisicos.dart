@@ -1,31 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:profitf5/telas/treino_screen.dart';
+import 'package:profitf5/database/database_helper.dart';
+import 'package:profitf5/session/user_session.dart';
 
 class DadosFisicosScreen extends StatefulWidget {
-
   final String objetivo;
 
-  const DadosFisicosScreen({
-    super.key,
-    required this.objetivo,
-  });
+  const DadosFisicosScreen({super.key, required this.objetivo});
 
   @override
-  State<DadosFisicosScreen> createState() =>
-      _DadosFisicosScreenState();
+  State<DadosFisicosScreen> createState() => _DadosFisicosScreenState();
 }
 
-class _DadosFisicosScreenState
-    extends State<DadosFisicosScreen> {
+class _DadosFisicosScreenState extends State<DadosFisicosScreen> {
+  final idadeController = TextEditingController();
 
-  final idadeController =
-      TextEditingController();
+  final alturaController = TextEditingController();
 
-  final alturaController =
-      TextEditingController();
-
-  final pesoController =
-      TextEditingController();
+  final pesoController = TextEditingController();
 
   late String objetivoSelecionado;
 
@@ -35,39 +27,24 @@ class _DadosFisicosScreenState
   void initState() {
     super.initState();
 
-    objetivoSelecionado =
-        widget.objetivo;
+    objetivoSelecionado = widget.objetivo;
   }
 
   void calcularIMC() {
+    double peso = double.tryParse(pesoController.text) ?? 0;
 
-    double peso =
-        double.tryParse(
-              pesoController.text,
-            ) ??
-            0;
-
-    double altura =
-        double.tryParse(
-              alturaController.text,
-            ) ??
-            0;
+    double altura = double.tryParse(alturaController.text) ?? 0;
 
     if (peso > 0 && altura > 0) {
-
-      double alturaMetros =
-          altura / 100;
+      double alturaMetros = altura / 100;
 
       setState(() {
-
-        imc = peso /
-            (alturaMetros * alturaMetros);
+        imc = peso / (alturaMetros * alturaMetros);
       });
     }
   }
 
   String classificacaoIMC(double imc) {
-
     if (imc == 0) {
       return "";
     }
@@ -89,24 +66,18 @@ class _DadosFisicosScreenState
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
 
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
 
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             const Text(
               "Dados\nFísicos",
               style: TextStyle(
@@ -121,10 +92,7 @@ class _DadosFisicosScreenState
 
             Text(
               "Objetivo: $objetivoSelecionado",
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 16,
-              ),
+              style: const TextStyle(color: Colors.white54, fontSize: 16),
             ),
 
             const SizedBox(height: 40),
@@ -152,8 +120,7 @@ class _DadosFisicosScreenState
             _input(
               controller: pesoController,
               hint: "Peso (kg)",
-              icon:
-                  Icons.monitor_weight_outlined,
+              icon: Icons.monitor_weight_outlined,
               onChanged: (_) => calcularIMC(),
             ),
 
@@ -167,16 +134,13 @@ class _DadosFisicosScreenState
               decoration: BoxDecoration(
                 color: const Color(0xFF1A1A1A),
 
-                borderRadius:
-                    BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20),
               ),
 
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
-
                   Text(
                     "IMC: ${imc.toStringAsFixed(1)}",
                     style: const TextStyle(
@@ -190,10 +154,7 @@ class _DadosFisicosScreenState
 
                   Text(
                     classificacaoIMC(imc),
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 16,
-                    ),
+                    style: const TextStyle(color: Colors.white54, fontSize: 16),
                   ),
                 ],
               ),
@@ -206,36 +167,64 @@ class _DadosFisicosScreenState
               height: 60,
 
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
+                  try {
+                    int? idade = int.tryParse(idadeController.text.trim());
+                    double? peso = double.tryParse(
+                      pesoController.text.trim().replaceAll(',', '.'),
+                    );
+                    double? altura = double.tryParse(
+                      alturaController.text.trim().replaceAll(',', '.'),
+                    );
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) =>
-          TreinoScreen(
-        objetivo:
-            objetivoSelecionado,
-      ),
-    ),
-  );
-},
+                    if (idade == null || peso == null || altura == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Preencha todos os dados'),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final userId = UserSession.currentUserId;
+                    if (userId != null) {
+                      await DatabaseHelper.instance.atualizarUsuario(
+                        userId,
+                        objetivo: objetivoSelecionado,
+                        idade: idade,
+                        peso: peso,
+                        altura: altura,
+                      );
+                    }
+
+                    if (!mounted) return;
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TreinoScreen(objetivo: objetivoSelecionado),
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                  }
+                },
 
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
 
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
 
                 child: const Text(
                   "CONTINUAR",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -251,7 +240,6 @@ class _DadosFisicosScreenState
     required IconData icon,
     Function(String)? onChanged,
   }) {
-
     return TextField(
       controller: controller,
 
@@ -259,28 +247,20 @@ class _DadosFisicosScreenState
 
       keyboardType: TextInputType.number,
 
-      style: const TextStyle(
-        color: Colors.white,
-      ),
+      style: const TextStyle(color: Colors.white),
 
       decoration: InputDecoration(
         hintText: hint,
 
-        hintStyle: const TextStyle(
-          color: Colors.white38,
-        ),
+        hintStyle: const TextStyle(color: Colors.white38),
 
-        prefixIcon: Icon(
-          icon,
-          color: Colors.white70,
-        ),
+        prefixIcon: Icon(icon, color: Colors.white70),
 
         filled: true,
         fillColor: const Color(0xFF1A1A1A),
 
         border: OutlineInputBorder(
-          borderRadius:
-              BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18),
 
           borderSide: BorderSide.none,
         ),

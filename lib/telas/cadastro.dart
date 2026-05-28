@@ -70,10 +70,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
                 const Text(
                   "Cadastre-se para continuar",
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.white54, fontSize: 16),
                 ),
 
                 const SizedBox(height: 40),
@@ -105,9 +102,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                   decoration: InputDecoration(
                     hintText: "Senha",
 
-                    hintStyle: const TextStyle(
-                      color: Colors.white38,
-                    ),
+                    hintStyle: const TextStyle(color: Colors.white38),
 
                     prefixIcon: const Icon(
                       Icons.lock_outline,
@@ -122,9 +117,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                       },
 
                       icon: Icon(
-                        esconderSenha
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        esconderSenha ? Icons.visibility_off : Icons.visibility,
 
                         color: Colors.white54,
                       ),
@@ -155,9 +148,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                   decoration: InputDecoration(
                     hintText: "Confirmar Senha",
 
-                    hintStyle: const TextStyle(
-                      color: Colors.white38,
-                    ),
+                    hintStyle: const TextStyle(color: Colors.white38),
 
                     prefixIcon: const Icon(
                       Icons.lock_outline,
@@ -167,8 +158,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
-                          esconderConfirmarSenha =
-                              !esconderConfirmarSenha;
+                          esconderConfirmarSenha = !esconderConfirmarSenha;
                         });
                       },
 
@@ -203,29 +193,23 @@ class _CadastroScreenState extends State<CadastroScreen> {
                   child: ElevatedButton(
                     onPressed: () async {
                       try {
-                        String nome =
-                            nomeController.text.trim();
+                        String nome = nomeController.text.trim();
 
-                        String email =
-                            emailController.text.trim();
+                        String email = emailController.text.trim();
 
-                        String senha =
-                            senhaController.text.trim();
+                        String senha = senhaController.text.trim();
 
-                        String confirmarSenha =
-                            confirmarSenhaController.text.trim();
+                        String confirmarSenha = confirmarSenhaController.text
+                            .trim();
 
                         // VALIDACAO
                         if (nome.isEmpty ||
                             email.isEmpty ||
                             senha.isEmpty ||
                             confirmarSenha.isEmpty) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                "Preencha todos os campos",
-                              ),
+                              content: Text("Preencha todos os campos"),
                             ),
                           );
 
@@ -234,12 +218,9 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
                         // SENHAS
                         if (senha != confirmarSenha) {
-                          ScaffoldMessenger.of(context)
-                              .showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                "As senhas não coincidem",
-                              ),
+                              content: Text("As senhas não coincidem"),
                             ),
                           );
 
@@ -247,8 +228,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                         }
 
                         // SALVAR SQLITE
-                        await DatabaseHelper.instance
-                            .cadastrarUsuario(
+                        await DatabaseHelper.instance.cadastrarUsuario(
                           nome,
                           email,
                           senha,
@@ -257,12 +237,9 @@ class _CadastroScreenState extends State<CadastroScreen> {
                         if (!mounted) return;
 
                         // MENSAGEM
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
+                        ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text(
-                              "Cadastro realizado com sucesso!",
-                            ),
+                            content: Text("Cadastro realizado com sucesso!"),
                           ),
                         );
 
@@ -270,19 +247,13 @@ class _CadastroScreenState extends State<CadastroScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginScreen(),
+                            builder: (context) => const LoginScreen(),
                           ),
                         );
                       } catch (e) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "Erro: $e",
-                            ),
-                          ),
-                        );
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text("Erro: $e")));
                       }
                     },
 
@@ -292,8 +263,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                       foregroundColor: Colors.black,
 
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                     ),
 
@@ -312,16 +282,13 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
                 // LOGIN
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
 
                   children: [
                     const Text(
                       "Já possui conta?",
 
-                      style: TextStyle(
-                        color: Colors.white54,
-                      ),
+                      style: TextStyle(color: Colors.white54),
                     ),
 
                     TextButton(
@@ -329,8 +296,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const LoginScreen(),
+                            builder: (context) => const LoginScreen(),
                           ),
                         );
                       },
@@ -358,31 +324,20 @@ class _CadastroScreenState extends State<CadastroScreen> {
     required TextEditingController controller,
     required String hint,
     required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return TextField(
       controller: controller,
-
+      keyboardType: keyboardType,
       style: const TextStyle(color: Colors.white),
-
       decoration: InputDecoration(
         hintText: hint,
-
-        hintStyle: const TextStyle(
-          color: Colors.white38,
-        ),
-
-        prefixIcon: Icon(
-          icon,
-          color: Colors.white70,
-        ),
-
+        hintStyle: const TextStyle(color: Colors.white38),
+        prefixIcon: Icon(icon, color: Colors.white70),
         filled: true,
-
         fillColor: const Color(0xFF1A1A1A),
-
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-
           borderSide: BorderSide.none,
         ),
       ),

@@ -1,62 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:profitf5/telas/dados_fisicos.dart';
+import 'package:profitf5/database/database_helper.dart';
+import 'package:profitf5/session/user_session.dart';
 
 class ObjetivoScreen extends StatefulWidget {
   const ObjetivoScreen({super.key});
 
   @override
-  State<ObjetivoScreen> createState() =>
-      _ObjetivoScreenState();
+  State<ObjetivoScreen> createState() => _ObjetivoScreenState();
 }
 
-class _ObjetivoScreenState
-    extends State<ObjetivoScreen> {
-
+class _ObjetivoScreenState extends State<ObjetivoScreen> {
   int selecionado = -1;
 
   final List objetivos = [
+    {"titulo": "Emagrecer", "icone": Icons.local_fire_department},
 
-    {
-      "titulo": "Emagrecer",
-      "icone": Icons.local_fire_department,
-    },
+    {"titulo": "Ganhar Massa", "icone": Icons.fitness_center},
 
-    {
-      "titulo": "Ganhar Massa",
-      "icone": Icons.fitness_center,
-    },
+    {"titulo": "Definição", "icone": Icons.bolt},
 
-    {
-      "titulo": "Definição",
-      "icone": Icons.bolt,
-    },
-
-    {
-      "titulo": "Condicionamento",
-      "icone": Icons.directions_run,
-    },
+    {"titulo": "Condicionamento", "icone": Icons.directions_run},
   ];
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
 
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
 
       body: Padding(
         padding: const EdgeInsets.all(24),
 
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             const Text(
               "Qual é\nseu objetivo?",
               style: TextStyle(
@@ -71,10 +51,7 @@ class _ObjetivoScreenState
 
             const Text(
               "Escolha uma opção",
-              style: TextStyle(
-                color: Colors.white54,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white54, fontSize: 16),
             ),
 
             const SizedBox(height: 40),
@@ -84,56 +61,36 @@ class _ObjetivoScreenState
                 itemCount: objetivos.length,
 
                 itemBuilder: (context, index) {
+                  final objetivo = objetivos[index];
 
-                  final objetivo =
-                      objetivos[index];
-
-                  bool ativo =
-                      selecionado == index;
+                  bool ativo = selecionado == index;
 
                   return GestureDetector(
-
                     onTap: () {
-
                       setState(() {
                         selecionado = index;
                       });
                     },
 
                     child: AnimatedContainer(
-                      duration:
-                          const Duration(
-                        milliseconds: 200,
-                      ),
+                      duration: const Duration(milliseconds: 200),
 
-                      margin:
-                          const EdgeInsets.only(
-                        bottom: 20,
-                      ),
+                      margin: const EdgeInsets.only(bottom: 20),
 
-                      padding:
-                          const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
 
                       decoration: BoxDecoration(
-                        color: ativo
-                            ? Colors.white
-                            : const Color(
-                                0xFF1A1A1A),
+                        color: ativo ? Colors.white : const Color(0xFF1A1A1A),
 
-                        borderRadius:
-                            BorderRadius.circular(
-                                24),
+                        borderRadius: BorderRadius.circular(24),
                       ),
 
                       child: Row(
                         children: [
-
                           Icon(
                             objetivo["icone"],
 
-                            color: ativo
-                                ? Colors.black
-                                : Colors.white,
+                            color: ativo ? Colors.black : Colors.white,
 
                             size: 32,
                           ),
@@ -144,14 +101,11 @@ class _ObjetivoScreenState
                             objetivo["titulo"],
 
                             style: TextStyle(
-                              color: ativo
-                                  ? Colors.black
-                                  : Colors.white,
+                              color: ativo ? Colors.black : Colors.white,
 
                               fontSize: 18,
 
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ],
@@ -167,36 +121,33 @@ class _ObjetivoScreenState
               height: 60,
 
               child: ElevatedButton(
-
-                onPressed: () {
-
+                onPressed: () async {
                   if (selecionado == -1) {
-
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-
-                      const SnackBar(
-                        content: Text(
-                          "Escolha um objetivo",
-                        ),
-                      ),
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Escolha um objetivo")),
                     );
 
                     return;
                   }
 
-                  String objetivoEscolhido =
-                      objetivos[selecionado]
-                          ["titulo"];
+                  String objetivoEscolhido = objetivos[selecionado]["titulo"];
+
+                  // SALVAR OBJETIVO NO BANCO
+                  final userId = UserSession.currentUserId;
+                  if (userId != null) {
+                    await DatabaseHelper.instance.atualizarUsuario(
+                      userId,
+                      objetivo: objetivoEscolhido,
+                    );
+                  }
+
+                  if (!mounted) return;
 
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          DadosFisicosScreen(
-                        objetivo:
-                            objetivoEscolhido,
-                      ),
+                          DadosFisicosScreen(objetivo: objetivoEscolhido),
                     ),
                   );
                 },
@@ -206,17 +157,13 @@ class _ObjetivoScreenState
                   foregroundColor: Colors.black,
 
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
 
                 child: const Text(
                   "CONTINUAR",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
